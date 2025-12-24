@@ -8,13 +8,45 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Detect build & set deploy dir
+        id: detect
+        shell: bash
+        run: |
+          set -e
+          DEPLOY_DIR="."
+          NEED_BUILD="false"
+
+          if [ -f package.json ]; then
+            NEED_BUILD="true"
+            DEPLOY_DIR="dist"
+            if [ -d build ]; then DEPLOY_DIR="build"; fi
+          fi
+
+          echo "need_build=$NEED_BUILD" >> $GITHUB_OUTPUT
+          echo "deploy_dir=$DEPLOY_DIR" >> $GITHUB_OUTPUT
+          echo "NEED_BUILD=$NEED_BUILD"
+          echo "DEPLOY_DIR=$DEPLOY_DIR"
+
+      - name: Install dependencies
+        if: steps.detect.outputs.need_build == 'true'
+        run: npm ci || npm install
+
+      - name: Build
+        if: steps.detect.outputs.need_build == 'true'
+        run: npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=nfc-client-cute-v2
+          command: pages deploy ${{ steps.detect.outputs.deploy_dir }} --project-name=nfc-client-cute-v2
