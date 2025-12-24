@@ -1,0 +1,15 @@
+{
+  "name": "nfc-client-cute-template",
+  "version": "1.0.0",
+  "description": "六本木Club Venusのキャスト、愛花様のNFC名刺用ランディングページ（Cute Theme）",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vercel": "^50.1.3"
+  }
+}
